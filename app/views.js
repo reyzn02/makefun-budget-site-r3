@@ -232,14 +232,17 @@ export function renderPlanner(view) {
           <button type="button" class="secondary" id="tx-cancel" hidden>Cancel edit</button>
         </form>
         <h3 style="margin-top:1.2rem;">Latest spending</h3>
+        <div class="table-scroll">
         <table id="latest-list">
           <thead><tr><th>Date</th><th>What</th><th>Category</th><th class="num">Amount</th><th class="hide-phone">Actions</th></tr></thead>
           <tbody>${rows.slice(0, 8).map((r) => txRow(r, true)).join('')}</tbody>
         </table>
+        </div>
       </section>
     </div>
     <section class="card" aria-label="Category budgets">
       <h2>Category budgets — ${money0(budgeted)} planned</h2>
+      <div class="table-scroll">
       <table>
         <thead><tr><th>Category</th><th class="num">Spent</th><th class="num">Budget</th><th class="num">Left</th><th>Used</th></tr></thead>
         <tbody>
@@ -257,6 +260,7 @@ export function renderPlanner(view) {
           }).join('')}
         </tbody>
       </table>
+      </div>
       <p style="margin-top:0.9rem;"><button class="secondary" id="reset-data">Reset sample data</button>
       <span class="muted">Restores the original 88 transactions, budgets and goals.</span></p>
     </section>`;
@@ -343,12 +347,14 @@ export function renderTransactions(view, query) {
         </div>
       </div>
       <p class="muted" id="tx-summary">Showing ${shown.length} of ${all.length} transactions — ${money(out)} out.</p>
+      <div class="table-scroll">
       <table id="tx-table">
         <thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="num">Amount</th><th class="hide-phone">Actions</th></tr></thead>
         <tbody>
           ${shown.length ? shown.map((r) => txRow(r, true)).join('') : '<tr><td colspan="5">Nothing matches — try a different search.</td></tr>'}
         </tbody>
       </table>
+      </div>
     </section>`;
 
   const applyFilter = () => {
@@ -477,12 +483,18 @@ export function renderInsights(view) {
   const avgYear = Math.round(avgSavedRaw * 12);
   const heaviest = trend.reduce((a, b) => (b.spent > a.spent ? b : a));
   const moves = nextMonthMoves(month, over);
+  const monthName = monthLabel(month).replace(' 2026', '');
+  const emergency = state.goals.find((g) => g.id === 'emergency');
+  const roadtrip = state.goals.find((g) => g.id === 'roadtrip');
+  const yearSentence = paceYear >= 2 * (emergency?.target ?? 0) + (roadtrip?.target ?? 0)
+    ? `At ${monthName}'s pace the family banks ${money0(paceYear)} in a year — enough for the emergency fund twice over, with the road trip on top.`
+    : `At ${monthName}'s pace the family banks ${money0(paceYear)} in a year — steady progress toward the emergency fund and the road trip.`;
 
   view.innerHTML = `
     <div class="page-head">
       <h1>Insights — ${monthLabel(month)}</h1>
       <p>What the numbers are actually saying, in plain English — plus three moves
-      for next month and a what-if calculator to play with.</p>
+      for next month, a what-if calculator and a debt payoff calculator to play with.</p>
     </div>
     ${tiles([
       { label: 'Saved this month', value: money0(saved), sub: `${rate}% of income`, id: 'insight-saved' },
@@ -511,6 +523,7 @@ export function renderInsights(view) {
           <span><span class="dot" style="background:#e8a13a"></span>Wants <b id="split-wants">${split.wants.pct}% · ${money(split.wants.amount)}</b></span>
           <span><span class="dot" style="background:#cfe8d8"></span>Saved <b id="split-saved">${split.saved.pct}% · ${money(split.saved.amount)}</b></span>
         </div>
+        <p class="muted" style="margin-top:0.4rem;">Shares are rounded to whole percents, so they can add to 99% or 101%.</p>
         <p style="margin-top:0.8rem;"><b>Biggest lever:</b> <span id="lever-tip">${leverTip(month, over)}</span></p>
       </section>
     </div>
@@ -547,10 +560,20 @@ export function renderInsights(view) {
         <div class="kv"><span>3-month average saved</span><b>${money(avgSaved)} / month</b></div>
         <div class="kv"><span>Projected yearly savings at this month's pace</span><b id="year-pace">${money0(paceYear)} / year</b></div>
         <div class="kv"><span>Projected yearly savings at the 3-month average</span><b id="year-avg">${money0(avgYear)} / year</b></div>
-        <p class="muted" style="margin-top:0.7rem;">At November's pace the family banks over $32,000 in a year —
-        enough for the emergency fund twice over, with the road trip on top.</p>
+        <p class="muted" style="margin-top:0.7rem;">${yearSentence}</p>
       </section>
-    </div>`;
+    </div>
+    <section class="card" aria-label="Debt payoff calculator">
+      <h2>Debt payoff calculator</h2>
+      <p class="muted">Paying off a card or a loan? Type in your own numbers — nothing is
+      filled in for you — and see how many months it takes and what the interest costs.</p>
+      <div class="form-row three">
+        <div><label for="debt-balance">Balance owed ($)</label><input id="debt-balance" type="number" min="0" step="1" placeholder="e.g. 1000"></div>
+        <div><label for="debt-apr">Interest rate (APR %)</label><input id="debt-apr" type="number" min="0" step="0.1" placeholder="e.g. 20"></div>
+        <div><label for="debt-payment">Monthly payment ($)</label><input id="debt-payment" type="number" min="0" step="1" placeholder="e.g. 100"></div>
+      </div>
+      <p><b id="debt-result">Enter a balance, APR and monthly payment to see the payoff time.</b> <span class="muted" id="debt-detail"></span></p>
+    </section>`;
 
   drawTrend(view.querySelector('#trend-chart'), trend);
 
@@ -565,6 +588,41 @@ export function renderInsights(view) {
   view.querySelector('#whatif-takeout').addEventListener('input', recompute);
   view.querySelector('#whatif-payday').addEventListener('input', recompute);
   recompute();
+
+  const debtRecompute = () => {
+    const balance = Number(view.querySelector('#debt-balance').value || 0);
+    const apr = Number(view.querySelector('#debt-apr').value || 0);
+    const payment = Number(view.querySelector('#debt-payment').value || 0);
+    const result = view.querySelector('#debt-result');
+    const detail = view.querySelector('#debt-detail');
+    if (!(balance > 0) || !(payment > 0)) {
+      result.textContent = 'Enter a balance, APR and monthly payment to see the payoff time.';
+      detail.textContent = '';
+      return;
+    }
+    const rate = apr / 100 / 12;
+    if (rate > 0 && payment <= balance * rate) {
+      result.textContent = 'That payment never clears the debt — it does not cover the monthly interest.';
+      detail.textContent = `Interest alone is ${money(balance * rate)} a month at ${apr}% APR.`;
+      return;
+    }
+    let remaining = balance;
+    let months = 0;
+    let interest = 0;
+    while (remaining > 0 && months < 1200) {
+      const charge = remaining * rate;
+      interest += charge;
+      const paid = Math.min(payment, remaining + charge);
+      remaining = remaining + charge - paid;
+      months += 1;
+    }
+    result.textContent = `Paid off in ${months} month${months === 1 ? '' : 's'} — about ${money0(interest)} of interest in total.`;
+    detail.textContent = `Total paid ${money(balance + interest)}.`;
+  };
+  ['#debt-balance', '#debt-apr', '#debt-payment'].forEach((sel) => {
+    view.querySelector(sel).addEventListener('input', debtRecompute);
+  });
+  debtRecompute();
 }
 
 function trendNote(trend) {
@@ -578,7 +636,7 @@ function leverTip(month, over) {
   const worst = over
     .map((c) => ({ name: c.name, overBy: categoryTotals(month).find((t) => t.name === c.name).spent - Number(state.budgets[c.name]) }))
     .sort((a, b) => b.overBy - a.overBy)[0];
-  return `Groceries is the lever: ${worst.name} ran $${Math.round(worst.overBy)} over its cap. One cheaper weekly shop closes most of that gap.`;
+  return `${worst.name} is the lever: it ran $${Math.round(worst.overBy)} over its cap. Bringing it back inside the cap closes most of the gap.`;
 }
 
 function nextMonthMoves(month, over) {
@@ -592,7 +650,8 @@ function nextMonthMoves(month, over) {
     moves.push('Hold every category inside its cap — the budget is working, so protect it.');
   }
   const dining = categoryTotals(month).find((c) => c.name === 'Dining Out');
-  moves.push(`Cap dining out at <b>${money0(150)}</b> next month — this month it cost ${money(dining.spent)}, and takeout is the easiest habit to halve.`);
+  const diningCap = Math.max(10, Math.round((dining.spent * 0.8) / 5) * 5);
+  moves.push(`Cap dining out at <b>${money0(diningCap)}</b> next month — this month it cost ${money(dining.spent)}, and takeout is the easiest habit to halve.`);
   moves.push('Automate <b>$100 to the road-trip fund on each payday</b> — $2,400 a year, and the lake trip pays for itself.');
   return moves.slice(0, 3);
 }
