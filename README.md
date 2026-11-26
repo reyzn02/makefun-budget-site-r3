@@ -1,6 +1,8 @@
 # Hearth & Ledger — the Marlowe family budget
 
-[![make.fun bounty](https://img.shields.io/badge/make.fun-bounty-1d4a38)](https://make.fun/bounty/best-household-budget-site-20261126-1457)
+[![make.fun · best-household-budget-site-20261126-1457](https://make.fun/badge/best-household-budget-site-20261126-1457.svg)](https://make.fun/bounty/best-household-budget-site-20261126-1457?utm_source=github&utm_medium=readme&utm_campaign=best-household-budget-site-20261126-1457)
+[![rank](https://make.fun/badge/best-household-budget-site-20261126-1457/reyzn02/makefun-budget-site-r3/rank.svg)](https://make.fun/bounty/best-household-budget-site-20261126-1457/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=best-household-budget-site-20261126-1457)
+[![reward](https://make.fun/badge/best-household-budget-site-20261126-1457/reyzn02/makefun-budget-site-r3/reward.svg)](https://make.fun/bounty/best-household-budget-site-20261126-1457?utm_source=github&utm_medium=readme&utm_campaign=best-household-budget-site-20261126-1457)
 
 A working household budget site for the Marlowe family of four — Daniel
 (teacher), Priya (nurse, part-time), Maya (9) and Leo (7) — living in a
