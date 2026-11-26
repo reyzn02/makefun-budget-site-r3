@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hearth &amp; Ledger — the Marlowe family budget</title>
+  <meta name="description" content="Hearth & Ledger is the Marlowe family's household budget site: 88 transactions across three months, five pages, four savings goals and ten budgets — dashboard, planner, spending log, goals and insights.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#/dashboard">
+        <span class="brand-mark" aria-hidden="true">⌂</span>
+        <span>
+          <span class="brand-name">Hearth &amp; Ledger</span><br>
+          <span class="brand-tag">The Marlowe family budget · Maple Street</span>
+        </span>
+      </a>
+      <nav class="mainnav" aria-label="Sections">
+        <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+        <a href="#/planner" data-nav="planner">Budget Planner</a>
+        <a href="#/transactions" data-nav="transactions">Transactions</a>
+        <a href="#/goals" data-nav="goals">Savings Goals</a>
+        <a href="#/insights" data-nav="insights">Insights</a>
+      </nav>
+      <div class="month-picker" id="month-picker" aria-label="Month">
+        <span>Month</span>
+      </div>
+    </div>
+  </header>
+  <main class="page" id="view"></main>
+  <footer class="site-foot">
+    <div class="rule">
+      Hearth &amp; Ledger — a working household budget for the Marlowe family of four:
+      Daniel (teacher), Priya (nurse, part-time), Maya (9) and Leo (7).
+      All figures are the family's own sample record; everything you change is saved
+      in this browser only, and the Reset button restores the sample data.
+    </div>
+  </footer>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
