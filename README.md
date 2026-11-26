@@ -26,8 +26,10 @@ rented three-bedroom house on Maple Street. Built for the
     or create a new one, plus the family's payday saving rules.
   - **Insights** — a 3-month spending trend chart; the live 50/30/20 split;
     a what-if calculator (cut weekly takeout + payday top-ups → yearly effect);
-    three moves for next month; a budget health check; year-at-a-glance
-    projections ($32,508 at November's pace, $29,828 at the 3-month average).
+    a debt payoff calculator (your own balance, APR and monthly payment —
+    months to clear plus total interest); three moves for next month; a budget
+    health check; year-at-a-glance projections ($32,508 at November's pace,
+    $29,828 at the 3-month average).
 - **Everything persists in localStorage** and every total updates live on edit.
 - **Static and offline** — no libraries, no network requests, system fonts only.
   Works on desktop and on a phone (single-column layout, Actions column hidden).
